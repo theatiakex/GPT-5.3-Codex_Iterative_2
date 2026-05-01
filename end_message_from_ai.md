@@ -64,3 +64,41 @@ Result: Passed 13/13
 Logged Iteration 2 telemetry in test_metrics.jsonl:
 Added {"project_iteration":2,"attempt":1,...,"passed":13,"failed":0,"pass_rate_percentage":100}
 If you want, I can continue with a small parser-selection layer next (e.g., by file extension or MIME) so SRT/WebVTT/TTML can be chosen automatically from one entry point.
+
+### Iteration 3
+
+Extended the prototype for Iteration 3 by adding external shot-change integration to the internal model and QC layer.
+
+What I added
+Internal model upgrade for external metadata:
+
+Updated SubtitleQc.Core/Models/Cue.cs
+Added optional StartFrame and EndFrame
+Preserved existing constructor usage (id, start, end, lines)
+Added SubtitleQc.Core/Models/ExternalQcData.cs
+Holds ShotChangeTimestamps, ShotChangeFrames, and optional FrameRate
+QC context/rule engine expansion:
+
+Updated SubtitleQc.Core/Qc/QcContext.cs to carry optional external data
+Updated SubtitleQc.Core/Qc/RuleEngine.cs
+Kept existing Evaluate(cues) behavior
+Added overload Evaluate(cues, externalData) for external-data aware flows
+Shot-change abstraction and default provider:
+
+Added SubtitleQc.Core/Qc/Abstractions/IShotChangeProvider.cs
+Added SubtitleQc.Core/Qc/EmptyShotChangeProvider.cs
+New rules for Iteration 3:
+
+Added SubtitleQc.Core/Qc/Rules/CrossShotBoundaryCheckRule.cs
+Supports constructor with IShotChangeProvider (as expected by tests)
+Also supports parameterless constructor for compatibility
+Added SubtitleQc.Core/Qc/Rules/MinFramesFromShotChangeRule.cs
+Supports constructor with IShotChangeProvider + thresholdFrames
+Kept constructor with only thresholdFrames
+Uses cue frame data and shot-change frames, with fallback behavior
+Validation
+Ran dotnet test SubtitleQc.Tests/SubtitleQc.Tests.csproj
+Final result: 19 passed, 0 failed
+Logged Iteration 3 attempts in test_metrics.jsonl:
+attempt 1: build failed (missing IShotChangeProvider)
+attempt 2: build/tests successful, 100% pass rate

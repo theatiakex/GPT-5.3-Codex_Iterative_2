@@ -14,8 +14,13 @@ public sealed class RuleEngine
 
     public QcReport Evaluate(IEnumerable<Cue> cues)
     {
+        return Evaluate(cues, externalData: null);
+    }
+
+    public QcReport Evaluate(IEnumerable<Cue> cues, ExternalQcData? externalData)
+    {
         IReadOnlyList<Cue> cueList = cues?.ToArray() ?? Array.Empty<Cue>();
-        var context = new QcContext(cueList);
+        var context = new QcContext(cueList, externalData);
         var results = cueList.Select(cue => EvaluateCue(cue, context)).ToArray();
         return new QcReport(results);
     }
