@@ -40,3 +40,27 @@ attempt 3: success (100% pass rate)
 Notes
 I had to add explicit package versions in SubtitleQc.Tests/SubtitleQc.Tests.csproj because the existing file had versionless PackageReference entries and restore failed otherwise.
 Running tests generated SubtitleQc.Tests/bin and SubtitleQc.Tests/obj build artifacts.
+
+
+### Iteration 2
+
+Extended the prototype for Iteration 2 by adding TTML parsing while leaving the QC engine and existing rules unchanged.
+
+What I added
+New parser: SubtitleQc.Core/Parsing/TtmlParser.cs
+Implements ISubtitleParser
+Parses TTML XML (<p> elements) into the existing internal Cue model
+Reads begin and end attributes for timing
+Supports multi-line cue text via <br/>
+Produces SubtitleDocument so existing RuleEngine can validate TTML cues with no rule changes
+What I preserved
+No changes to:
+RuleEngine
+Existing rule classes (MaxLines, MaxCpl, MaxCps, MinDuration, OverlapCheck, EmptyCueCheck)
+Iteration 1 behavior remains intact.
+Verification
+Ran tests: dotnet test SubtitleQc.Tests/SubtitleQc.Tests.csproj
+Result: Passed 13/13
+Logged Iteration 2 telemetry in test_metrics.jsonl:
+Added {"project_iteration":2,"attempt":1,...,"passed":13,"failed":0,"pass_rate_percentage":100}
+If you want, I can continue with a small parser-selection layer next (e.g., by file extension or MIME) so SRT/WebVTT/TTML can be chosen automatically from one entry point.
